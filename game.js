@@ -78,6 +78,13 @@ class Deck {
         throw new Error("Card not queried, give 'Value Suit'");
     }
 
+    // Just returns the card array to iterate through without twos
+    drawEntireDeckWithoutTwosArray() {
+        return [...this.cards].filter((potentialCard) => {
+            return potentialCard.value !== "2"
+        })
+    }
+
     toString() {
         return `${this.cards}`
     }
@@ -99,11 +106,12 @@ class Hand {
     };
 
     addCard(card) {
+        card.handPosition = this.cards.length - 1;
         this.cards.push(card);
     };
 
     getAllCards() {
-        return this.cards;
+        return [...this.cards];
     };
 
     deucesDeal() {
@@ -123,6 +131,121 @@ class Hand {
     //Manually replace one card, drawn or undrawn, with a certain value and suit, index count starting at zero
     replaceCard(cardIndexToReplace, value, suit) {
         this.cards[cardIndexToReplace] = this.drawDeck.queryCard(value, suit);
+    }
+
+    withOnlyTwos() {
+        return [...this.cards].filter((potentialCard) => {
+            return potentialCard.getValue() === "2"
+        })
+    }
+
+    withNoTwos() {
+        return [...this.cards].filter((potentialCard) => {
+            return potentialCard.getValue() !== "2"
+        })
+    }
+
+
+    // Returns hand with twos sorted last, used for scoring logic
+    withTwosSortedLast() {
+        return this.withNoTwos().concat(this.withOnlyTwos());
+    }
+
+
+    // Identify if all cards are the same suit for flushes
+    identifyAllSameSuit() {
+        const handWithNoTwos = this.hand.withNoTwos();
+
+        const numberOfNonTwos = handWithNoTwos.length;
+        const numberMatchingSuitOfFirstCard = handWithNoTwos.filter((card) => {
+            card.getSuit() === handWithNoTwos[0].getSuit()
+        }).length;
+
+        return numberOfNonTwos === numberMatchingSuitOfFirstCard;
+    }
+
+    // Mainly used for straight calculations, identifies total number of gaps between each card, testing Ace high and low
+    // Also returns number of value duplicates, since duplicates will invalidate straight
+    numberOfGaps() {
+        let aceHighGap = 0;
+        let aceLowGap = 0;
+        let aceHighDuplicates = 0;
+        let aceLowDuplicates = 0;
+
+        
+        // Ace property will be added in manually each test
+        const cardValueDict = {
+            "2": 2,
+            "3": 3,
+            "4": 4,
+            "5": 5,
+            "6": 6,
+            "7": 7,
+            "8": 8,
+            "9": 9,
+            "10": 10,
+            "Jack": 11,
+            "Queen": 12,
+            "King": 13,
+            "Ace": 14
+        };
+
+        // Passed to array sort function to determine sorting behavior
+        function arraySortFunction(a, b) {
+            return cardValueDict[`${a.getValue()}`] - cardValueDict[`${b.getValue()}`];
+            console.log(`${cardValueDict[`${a.getValue()}`] - cardValueDict[`${a.getValue()}`]}`)
+        }
+
+        // Check Ace High
+        let sortedCards = [...this.withNoTwos()].sort(arraySortFunction);
+        
+        console.log(`sortedCards ${sortedCards}`)
+        
+        for (let i=0; i < sortedCards.length - 1; i++) {
+            const gap = cardValueDict[`${sortedCards[i + 1].getValue()}`] - cardValueDict[`${sortedCards[i].getValue()}`] - 1;
+            
+            if (gap === -1) {
+                aceHighDuplicates += 1;
+            } else {
+                aceHighGap += gap;
+            };
+
+            console.log(`aceHighGap ${aceHighGap}`);
+            console.log(`ace high Duplicates ${aceHighDuplicates}`);
+        };
+
+        
+        // Ace Low
+        cardValueDict["Ace"] = 1;
+
+        sortedCards = [...this.withNoTwos()].sort(arraySortFunction);
+
+        console.log(`sortedCards ${sortedCards}`);
+        
+        for (let i=0; i < sortedCards.length - 1; i++) {
+            const gap = cardValueDict[`${sortedCards[i + 1].getValue()}`] - cardValueDict[`${sortedCards[i].getValue()}`] - 1;
+            
+            if (gap === -1) {
+                aceLowDuplicates += 1;
+            } else {
+                aceLowGap += gap;
+            };
+
+            console.log(`aceLowGap ${aceLowGap}`);
+            console.log(`acelowDuplicates ${aceLowDuplicates}`);
+        };
+
+        if (aceHighDuplicates === 0 && aceHighGap < aceLowGap) {
+            return {
+                duplicates: aceHighDuplicates,
+                gap: aceHighGap
+            }
+        } else {
+            return {
+                duplicates: aceLowDuplicates,
+                gap: aceLowGap
+            }
+        }
     }
 
     toString() {
@@ -155,8 +278,10 @@ class scoringCalculator {
         }
     }
 
+
+
     // Returns true if hand is a royal flush
-    identifyRoyalFlush(hand) {
+    identifyNatRoyalFlush(hand) {
         let suit;
         const cardsDrawn = {
             "Ace": 0,
@@ -167,7 +292,7 @@ class scoringCalculator {
         }
 
         let count = 0;
-        for (const eachCard of hand.getAllCards()) {
+        for (const eachCard of hand.withTwosSortedLast()) {
             if (count === 0) {
                 suit = eachCard.getSuit();
             }
@@ -187,11 +312,89 @@ class scoringCalculator {
         }
     }
     
+    identifyFourDeuces(hand) {
+        // Filters to cards with value of two and checks if length is 4
+        if (hand.getAllCards().filter((card) => {
+            return card.getValue() === "2"
+        }).length === 4) {
+            return true
+        } else {
+            return false
+        }
+    }
+
+    identifyWildRoyalFlush(hand) {
+        let suit;
+        const cardsDrawn = {
+            "Ace": 0,
+            "King": 0,
+            "Queen": 0,
+            "Jack": 0,
+            "10": 0
+        }
+
+        let count = 0;
+        for (const eachCard of hand.withTwosSortedLast()) {
+            if (count === 0) {
+                suit = eachCard.getSuit();
+            }
+
+            // If card value has already been drawn or doesn't have the same suit as first card, immediately returns false
+            if ((eachCard.getSuit() !== suit || cardsDrawn[`${eachCard.getValue()}`] !== 0) && eachCard.getValue() !== "2") {
+                console.log(`false ${eachCard.getValue()} ${suit} ${eachCard.getSuit()}`);
+                return false;
+            } else if (count !== 4) {
+                cardsDrawn[`${eachCard.getValue()}`] = 1;
+                console.log(`true ${eachCard.getValue()}`);
+            } else {
+                return true;
+            }
+
+            count++;
+        }
+    }
+
+    identifyFiveOfAKind(hand) {
+        const allCards = hand.withTwosSortedLast();
 
 
+        if ([...allCards].filter((card) => {
+            return (card.getValue() === allCards[0].getValue() || card.getValue() === "2")
+        }).length === 5
+        ) {
+            return true
+        } else {
+            return false
+        }
+    }
+
+    identifyFourOfAKind(hand) {
+        const allCards = hand.withTwosSortedLast();
 
 
-    //test
+        if ([...allCards].filter((card) => {
+            return (card.getValue() === allCards[0].getValue() || card.getValue() === "2")
+        }).length === 4
+        ) {
+            return true
+        } else {
+            return false
+        }
+    }
+
+    identifyThreeOfAKind(hand) {
+        const allCards = hand.withTwosSortedLast();
+
+
+        if ([...allCards].filter((card) => {
+            return (card.getValue() === allCards[0].getValue() || card.getValue() === "2")
+        }).length === 3
+        ) {
+            return true
+        } else {
+            return false
+        }
+    }
 }
 
 // The DOMManager will manage all interactions with the buttons and game screen
@@ -322,9 +525,10 @@ class deucesWildGame {
 }
 
 
-let newGame = new deucesWildGame(false, buttons, ["Ace Spades", "King Spades", "Queen Spades", "Jack Spades", "10 Spades"]);
+let newGame = new deucesWildGame(false, buttons, ["King Hearts", "2 Clubs", "Ace Spades", "3 Diamonds", "2 Spades"]);
 
 // test
 console.log(`${newGame.hand}`);
 const testScorer = new scoringCalculator(false);
-console.log(`${testScorer.identifyRoyalFlush(newGame.hand, false)}`);
+console.log(`${testScorer.identifyFiveOfAKind(newGame.hand, false)}`);
+console.log(`number of gap ${newGame.hand.numberOfGaps().gap} ${newGame.hand.numberOfGaps().duplicates}`);
