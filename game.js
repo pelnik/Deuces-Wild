@@ -139,6 +139,7 @@ class Hand {
         })
     }
 
+    // returns array of cards that are not twos
     withNoTwos() {
         return [...this.cards].filter((potentialCard) => {
             return potentialCard.getValue() !== "2"
@@ -152,19 +153,26 @@ class Hand {
     }
 
 
-    // Identify if all cards are the same suit for flushes
+    // Identify if all cards are the same suit for flushes, ignores twos
     identifyAllSameSuit() {
-        const handWithNoTwos = this.hand.withNoTwos();
-
+        const handWithNoTwos = this.withNoTwos();
         const numberOfNonTwos = handWithNoTwos.length;
+
+        console.log(`${handWithNoTwos}`)
+
         const numberMatchingSuitOfFirstCard = handWithNoTwos.filter((card) => {
-            card.getSuit() === handWithNoTwos[0].getSuit()
+            console.log(`${card.getSuit()}`)
+            console.log(`${handWithNoTwos[0].getSuit()}`)
+            return card.getSuit() === handWithNoTwos[0].getSuit()
         }).length;
+
+        console.log(`${numberMatchingSuitOfFirstCard}`)
 
         return numberOfNonTwos === numberMatchingSuitOfFirstCard;
     }
 
     // Mainly used for straight calculations, identifies total number of gaps between each card, testing Ace high and low
+    // Knowing the gaps allows you to know if the two's will "cover" the gaps
     // Also returns number of value duplicates, since duplicates will invalidate straight
     numberOfGaps() {
         let aceHighGap = 0;
@@ -254,14 +262,14 @@ class Hand {
 }
 
 // A separate class will be used to manage the scoring DOM elements and caclulations.
-// Odds will take in an array of payouts for future game modes
+// handScores will take in an array of payouts for future game modes
 class scoringCalculator {
-    constructor(hand, DOMless, odds) {
-        if (odds === undefined) {
+    constructor(hand, DOMless, handScores) {
+        if (handScores === undefined) {
             this.hand = hand;
             this.DOMless = DOMless;
 
-            this.odds = {
+            this.handScores = {
                 natRoyalFlush: 800,
                 fourDeuces: 200,
                 wildRoyalFlush: 25,
@@ -274,7 +282,7 @@ class scoringCalculator {
                 threeOfAKind: 1
             }
         } else {
-            this.odds = odds;
+            this.handScores = handScores;
         }
     }
 
@@ -368,6 +376,32 @@ class scoringCalculator {
         }
     }
 
+    // Identifies straight flushes
+    identifyStraightFlush(hand) {
+        // Checks if all non-two cards are the same suit
+        if (hand.identifyAllSameSuit() === false) {
+            console.log(`same suit rejection`);
+            return false
+        }
+
+        const numOfGapsObject = hand.numberOfGaps();
+
+        console.log(`${numOfGapsObject}`);
+
+        if (numOfGapsObject.duplicates !== 0) {
+            console.log(`duplicate rejection`);
+            return false;
+        } else if (numOfGapsObject.gap > hand.withOnlyTwos().length) {
+            return false;
+            console.log(`gap duplicate rejction`);
+
+        } else {
+            return true
+            console.log(`else rejction`);
+        }
+
+    }
+
     identifyFourOfAKind(hand) {
         const allCards = hand.withTwosSortedLast();
 
@@ -379,6 +413,53 @@ class scoringCalculator {
             return true
         } else {
             return false
+        }
+    }
+
+
+    identifyFullHouse(hand) {
+        // Tests if only two numbers exist of the non-Twos. 
+        // Will ensure that four of a value doesn't exist. Shouldn't practically matter since four of a kind
+        // will always be checked first, but better to be defensive!
+        const numberOfEachCardValue = {};
+
+        for (const card of hand.withNoTwos()) {
+            if (card.getValue() in numberOfEachCardValue) {
+                numberOfEachCardValue[card.getValue()] += 1;
+            } else {
+                numberOfEachCardValue[card.getValue()] = 1;
+            }
+        }
+
+        if (Object.keys(numberOfEachCardValue).length > 2) {
+            return false;
+        } else {
+            // Check for four of a kind, which is not a full house
+            for (const numberofEach of Object.values(numberOfEachCardValue)) {
+                console.log(`${numberofEach}`)
+                if (numberofEach === 4) {
+                    return false;
+                }
+            }
+
+            // If passed all above, return true
+            return true;
+        }
+    }
+    
+    // Wrapper for all same suit hand method, for consistency
+    identifyFlush(hand) {
+        return hand.identifyAllSameSuit();
+    }
+
+    identifyStraight(hand) {
+        const numOfGapsObject = hand.numberOfGaps();
+        const numOfTwosInHand = hand.withOnlyTwos().length;
+
+        if (numOfTwosInHand < numOfGapsObject.gap || numOfGapsObject.duplicates !== 0) {
+            return false
+        } else {
+            return true
         }
     }
 
@@ -395,7 +476,35 @@ class scoringCalculator {
             return false
         }
     }
+
+    // Returns the score of hand passed in using handScores
+    getScore(hand) {
+        if (this.identifyNatRoyalFlush(hand) === true) {
+            return this.handScores.natRoyalFlush;
+        } else if (this.identifyFourDeuces(hand) === true) {
+            return this.handScores.fourDeuces;
+        } else if (this.identifyWildRoyalFlush(hand) === true) {
+            return this.handScores.wildRoyalFlush;
+        } else if (this.identifyFiveOfAKind(hand) === true) {
+            return this.handScores.fiveOfAKind;
+        } else if (this.identifyStraightFlush(hand) === true) {
+            return this.handScores.straightFlush;
+        } else if (this.identifyFourOfAKind(hand) === true) {
+            return this.handScores.fourOfAKind;
+        } else if (this.identifyFullHouse(hand) === true) {
+            return this.handScores.fullHouse;
+        } else if (this.identifyFlush(hand) === true) {
+            return this.handScores.flush;
+        } else if (this.identifyStraight(hand) === true) {
+            return this.handScores.straight;
+        } else if (this.threeOfAKind(hand) === true) {
+            return this.handScores.threeOfAKind;
+        } else {
+            return 0;
+        }
+    }
 }
+
 
 // The DOMManager will manage all interactions with the buttons and game screen
 class DOMManager {
@@ -452,6 +561,11 @@ class DOMManager {
 
     }
 
+    addSubmitLabel(scoringCalc) {
+        const submitLabel = document.createElement("label");
+        submitLabel.textContent = `Great job! Score: ${scoringCalc.getscore()}`;
+    }
+
 
     onSubmitButtonClick(evt) {
         const selectedCards = document.querySelectorAll(".selectedCard");
@@ -466,11 +580,6 @@ class DOMManager {
         }
         
         console.log(`${selectedCards}`);
-
-
-
-        const submitLabel = document.createElement("label");
-        submitLabel.textContent = "Great job!";
         evt.target.after(submitLabel);
     }
 }
@@ -522,13 +631,21 @@ class deucesWildGame {
         this.hand.deucesDeal();
         this.DOMManager.setButtonsToCards();
     }
+
+    // Game logic for on Submit, calls DOM
+    onSubmit() {
+        if (this.DOMless === false) {
+
+        }
+    }
 }
 
 
-let newGame = new deucesWildGame(false, buttons, ["King Hearts", "2 Clubs", "Ace Spades", "3 Diamonds", "2 Spades"]);
+let newGame = new deucesWildGame(false, buttons, ["King Hearts", "Queen Hearts","10 Hearts", "Ace Hearts", "Jack Hearts"]);
 
 // test
 console.log(`${newGame.hand}`);
 const testScorer = new scoringCalculator(false);
 console.log(`${testScorer.identifyFiveOfAKind(newGame.hand, false)}`);
 console.log(`number of gap ${newGame.hand.numberOfGaps().gap} ${newGame.hand.numberOfGaps().duplicates}`);
+console.log(`straight: ${testScorer.getScore(newGame.hand, false)}`);
