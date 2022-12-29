@@ -128,9 +128,13 @@ class Hand {
         }
     };
 
-    //Manually replace one card, drawn or undrawn, with a certain value and suit, index count starting at zero
+    // Manually replace one card, if value and suit not specified, the card is random undrawn card
     replaceCard(cardIndexToReplace, value, suit) {
-        this.cards[cardIndexToReplace] = this.drawDeck.queryCard(value, suit);
+        if (value === undefined || suit === undefined) {
+            this.cards[cardIndexToReplace] = this.drawDeck.drawCard();
+        } else {
+            this.cards[cardIndexToReplace] = this.drawDeck.queryCard(value, suit);
+        }
     }
 
     withOnlyTwos() {
@@ -158,15 +162,9 @@ class Hand {
         const handWithNoTwos = this.withNoTwos();
         const numberOfNonTwos = handWithNoTwos.length;
 
-        console.log(`${handWithNoTwos}`)
-
         const numberMatchingSuitOfFirstCard = handWithNoTwos.filter((card) => {
-            console.log(`${card.getSuit()}`)
-            console.log(`${handWithNoTwos[0].getSuit()}`)
             return card.getSuit() === handWithNoTwos[0].getSuit()
         }).length;
-
-        console.log(`${numberMatchingSuitOfFirstCard}`)
 
         return numberOfNonTwos === numberMatchingSuitOfFirstCard;
     }
@@ -201,14 +199,11 @@ class Hand {
         // Passed to array sort function to determine sorting behavior
         function arraySortFunction(a, b) {
             return cardValueDict[`${a.getValue()}`] - cardValueDict[`${b.getValue()}`];
-            console.log(`${cardValueDict[`${a.getValue()}`] - cardValueDict[`${a.getValue()}`]}`)
         }
 
         // Check Ace High
         let sortedCards = [...this.withNoTwos()].sort(arraySortFunction);
-        
-        console.log(`sortedCards ${sortedCards}`)
-        
+                
         for (let i=0; i < sortedCards.length - 1; i++) {
             const gap = cardValueDict[`${sortedCards[i + 1].getValue()}`] - cardValueDict[`${sortedCards[i].getValue()}`] - 1;
             
@@ -217,9 +212,6 @@ class Hand {
             } else {
                 aceHighGap += gap;
             };
-
-            console.log(`aceHighGap ${aceHighGap}`);
-            console.log(`ace high Duplicates ${aceHighDuplicates}`);
         };
 
         
@@ -227,8 +219,6 @@ class Hand {
         cardValueDict["Ace"] = 1;
 
         sortedCards = [...this.withNoTwos()].sort(arraySortFunction);
-
-        console.log(`sortedCards ${sortedCards}`);
         
         for (let i=0; i < sortedCards.length - 1; i++) {
             const gap = cardValueDict[`${sortedCards[i + 1].getValue()}`] - cardValueDict[`${sortedCards[i].getValue()}`] - 1;
@@ -238,9 +228,6 @@ class Hand {
             } else {
                 aceLowGap += gap;
             };
-
-            console.log(`aceLowGap ${aceLowGap}`);
-            console.log(`acelowDuplicates ${aceLowDuplicates}`);
         };
 
         if (aceHighDuplicates === 0 && aceHighGap < aceLowGap) {
@@ -307,11 +294,9 @@ class scoringCalculator {
 
             // If card value has already been drawn or doesn't have the same suit as first card, immediately returns false
             if (eachCard.getSuit() !== suit || cardsDrawn[`${eachCard.getValue()}`] !== 0) {
-                console.log(`false ${eachCard.getValue()} ${suit} ${eachCard.getSuit()}`);
                 return false;
             } else if (count !== 4) {
                 cardsDrawn[`${eachCard.getValue()}`] = 1;
-                console.log(`true ${eachCard.getValue()}`);
             } else {
                 return true;
             }
@@ -349,11 +334,9 @@ class scoringCalculator {
 
             // If card value has already been drawn or doesn't have the same suit as first card, immediately returns false
             if ((eachCard.getSuit() !== suit || cardsDrawn[`${eachCard.getValue()}`] !== 0) && eachCard.getValue() !== "2") {
-                console.log(`false ${eachCard.getValue()} ${suit} ${eachCard.getSuit()}`);
                 return false;
             } else if (count !== 4) {
                 cardsDrawn[`${eachCard.getValue()}`] = 1;
-                console.log(`true ${eachCard.getValue()}`);
             } else {
                 return true;
             }
@@ -380,24 +363,17 @@ class scoringCalculator {
     identifyStraightFlush(hand) {
         // Checks if all non-two cards are the same suit
         if (hand.identifyAllSameSuit() === false) {
-            console.log(`same suit rejection`);
             return false
         }
 
         const numOfGapsObject = hand.numberOfGaps();
 
-        console.log(`${numOfGapsObject}`);
-
         if (numOfGapsObject.duplicates !== 0) {
-            console.log(`duplicate rejection`);
             return false;
         } else if (numOfGapsObject.gap > hand.withOnlyTwos().length) {
             return false;
-            console.log(`gap duplicate rejction`);
-
         } else {
             return true
-            console.log(`else rejction`);
         }
 
     }
@@ -436,7 +412,6 @@ class scoringCalculator {
         } else {
             // Check for four of a kind, which is not a full house
             for (const numberofEach of Object.values(numberOfEachCardValue)) {
-                console.log(`${numberofEach}`)
                 if (numberofEach === 4) {
                     return false;
                 }
@@ -497,7 +472,7 @@ class scoringCalculator {
             return this.handScores.flush;
         } else if (this.identifyStraight(hand) === true) {
             return this.handScores.straight;
-        } else if (this.threeOfAKind(hand) === true) {
+        } else if (this.identifyThreeOfAKind(hand) === true) {
             return this.handScores.threeOfAKind;
         } else {
             return 0;
@@ -511,6 +486,7 @@ class DOMManager {
     constructor(hand, buttons, gameParent) {
         this.hand = hand;
         this.buttons = buttons;
+        this.gameParent = gameParent;
 
         this.buttonIDs = ["firstCard","secondCard","thirdCard","fourthCard","fifthCard"];
         this.submitButton = document.querySelector("#submitButton");
@@ -561,26 +537,29 @@ class DOMManager {
 
     }
 
-    addSubmitLabel(scoringCalc) {
+    addSubmitLabel(score) {
         const submitLabel = document.createElement("label");
-        submitLabel.textContent = `Great job! Score: ${scoringCalc.getscore()}`;
+        submitLabel.textContent = `Great job! Score: ${score}`;
+        
+        // Get parent div for submit button
+        const parentSubmitDiv = document.querySelector("#parentSubmitButton");
+        parentSubmitDiv.appendChild(submitLabel);
     }
 
 
     onSubmitButtonClick(evt) {
-        const selectedCards = document.querySelectorAll(".selectedCard");
+        const selectedCards = [false, false, false, false, false]
+        const selectedDOMCards = document.querySelectorAll(".selectedCard");
 
 
-        for (const cardNode of selectedCards) {
-            console.log(`${cardNode.id}`);
-            console.log(`test`);
-
-            const cardIndex = this.buttonIDs.indexOf(`${cardNode.id}`);
-            console.log(`${cardIndex}`)
+        for (const DOMcardElement of selectedDOMCards) {
+            const cardIndex = this.buttonIDs.indexOf(`${DOMcardElement.id}`);
+            selectedCards[cardIndex] = true;
         }
-        
+
         console.log(`${selectedCards}`);
-        evt.target.after(submitLabel);
+        console.log(`${this.gameParent}`);
+        this.gameParent.onSubmit(selectedCards);
     }
 }
 
@@ -595,7 +574,7 @@ class deucesWildGame {
 
         this.deck = new Deck();        
         this.hand = new Hand(this.deck);
-        this.DOMManager = new DOMManager(this.hand, this.buttons, self);
+        this.DOMManager = new DOMManager(this.hand, this.buttons, this);
         this.scoringCalculator = new scoringCalculator(this.hand, false);
 
 
@@ -632,11 +611,28 @@ class deucesWildGame {
         this.DOMManager.setButtonsToCards();
     }
 
-    // Game logic for on Submit, calls DOM
-    onSubmit() {
+    // Game logic for on Submit, is called from DOM if DOM game
+    onSubmit(selectedCards) {
         if (this.DOMless === false) {
+            // Selected cards is a boolean array
+            let i = 0;
+            for (const cardBool of selectedCards) {
+                if (cardBool === false) {
+                    this.hand.replaceCard(i);
+                }
+                i++;
+            }
 
+            this.DOMManager.setButtonsToCards();
+
+
+            console.log(`on Submit score: ${this.scoringCalculator.getScore(this.hand)}`)
+            this.DOMManager.addSubmitLabel(this.scoringCalculator.getScore(this.hand));
         }
+    }
+
+    toString() {
+        return `Game hand: ${this.hand}; Game DOMless: ${this.DOMless}`;
     }
 }
 
