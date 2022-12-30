@@ -480,7 +480,7 @@ class scoringCalculator {
     }
 
     // This will give an expected score of a certain hand within a certain confidence interval, given out of 100, (99.9 receommended)
-    runScoringIterations(hand, handcombo, CI) {
+    runScoringIterations(hand, handcombos, CI) {
         // The code will check the calculated confidence interval after the number of iterations gone by for each set
         let set = 100;
         expectedCI = CI === undefined ? 99.9 : CI;
@@ -488,7 +488,12 @@ class scoringCalculator {
         // This will track the score history of the hand
         scoreHistory = [];
 
+        handWithNoTwos = hand.withNoTwos();
+        handwithOnlyTwos = hand.withOnlyTwos();
 
+        for (combo of handcombos) {
+            
+        }
 
 
     }
@@ -530,6 +535,7 @@ class GameIntelligence {
         const allNonTwoCombinations = [];
 
         allNonTwoCombinations = this.generateCombinations(sizeOfHandWithNoTwos, sizeOfHandWithNoTwos);
+
     }
 }
 
