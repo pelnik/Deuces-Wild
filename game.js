@@ -128,7 +128,7 @@ class Hand {
         }
     };
 
-    // Manually replace one card, if value and suit not specified, the card is random undrawn card
+    // Manually replace one card, if value and suit not specified, the card is random undrawn card and gets marked as drawn
     replaceCard(cardIndexToReplace, value, suit) {
         if (value === undefined || suit === undefined) {
             this.cards[cardIndexToReplace] = this.drawDeck.drawCard();
@@ -137,6 +137,7 @@ class Hand {
         }
     }
 
+    // Returns only the twos in hand
     withOnlyTwos() {
         return [...this.cards].filter((potentialCard) => {
             return potentialCard.getValue() === "2"
@@ -251,9 +252,8 @@ class Hand {
 // A separate class will be used to manage the scoring DOM elements and caclulations.
 // handScores will take in an array of payouts for future game modes
 class scoringCalculator {
-    constructor(hand, DOMless, handScores) {
+    constructor(DOMless, handScores) {
         if (handScores === undefined) {
-            this.hand = hand;
             this.DOMless = DOMless;
 
             this.handScores = {
@@ -478,13 +478,65 @@ class scoringCalculator {
             return 0;
         }
     }
+
+    // This will give an expected score of a certain hand within a certain confidence interval, given out of 100, (99.9 receommended)
+    runScoringIterations(hand, handcombo, CI) {
+        // The code will check the calculated confidence interval after the number of iterations gone by for each set
+        let set = 100;
+        expectedCI = CI === undefined ? 99.9 : CI;
+
+        // This will track the score history of the hand
+        scoreHistory = [];
+
+
+
+
+    }
+}
+
+// The good stuff, this object will calculate best hands, EV of hands, track history, etc. Will contain the "intelligent" parts of the game
+class GameIntelligence {
+    contructor() {
+    }
+
+    // Generate an array of arrays. Each child array is a combination of boolean values of a certain size;
+    // Used to iterate through for each combination of cards to hold
+    // Call the function with the same two values
+    generateCombinations(numberOfCards, level) {
+        // Array of arrays to iterate through
+        let combos = [];
+
+        if (level === 1) {
+            return [[true], [false]]
+        }
+
+        let lowerCombos = this.generateCombinations(numberOfCards, level - 1);
+
+        for (const combo of lowerCombos) {
+            combos.push([true, ...combo])
+            combos.push([false, ...combo])
+        }
+         
+
+        console.log(combos)
+        return combos;
+    }
+
+    // This will tell the user which cards they should have kept
+    calculateBestCardKeep(hand) {
+        // Twos will always be kept, so those won't be checked
+        const handWithNoTwos = hand.withNoTwos();
+        const sizeOfHandWithNoTwos = handWithNoTwos.length;
+        const allNonTwoCombinations = [];
+
+        allNonTwoCombinations = this.generateCombinations(sizeOfHandWithNoTwos, sizeOfHandWithNoTwos);
+    }
 }
 
 
 // The DOMManager will manage all interactions with the buttons and game screen
 class DOMManager {
-    constructor(hand, buttons, gameParent) {
-        this.hand = hand;
+    constructor(buttons, gameParent) {
         this.buttons = buttons;
         this.gameParent = gameParent;
 
@@ -511,19 +563,23 @@ class DOMManager {
     };
 
     // Update buttons to text values of cards
+    // Updates hand value
     // if testCards have been passed, will assign those cards instead
-    setButtonsToCards() {
+    setButtonsToCards(hand) {
         for (let i = 0; i < 5; i++) {
-            this.buttons[i].textContent = `${this.hand.getAllCards()[i]}`;
+            this.buttons[i].textContent = `${hand.getAllCards()[i]}`;
         }
     }
 
     // Add onClick event listeners for cards and submit
     listenForCardClicks() {
-        for (const button of buttons) {
+        for (const button of this.buttons) {
             button.addEventListener("click", this.onClickButtonChange);
         };
 
+    }
+
+    listenForSubmitClicks() {
         this.submitButton.addEventListener("click", this.onSubmitButtonClick.bind(this))
     }
 
@@ -537,6 +593,7 @@ class DOMManager {
 
     }
 
+    // Adds the submit label and returns it
     addSubmitLabel(score) {
         const submitLabel = document.createElement("label");
         submitLabel.textContent = `Great job! Score: ${score}`;
@@ -544,6 +601,8 @@ class DOMManager {
         // Get parent div for submit button
         const parentSubmitDiv = document.querySelector("#parentSubmitButton");
         parentSubmitDiv.appendChild(submitLabel);
+
+        return submitLabel;
     }
 
 
@@ -561,6 +620,26 @@ class DOMManager {
         console.log(`${this.gameParent}`);
         this.gameParent.onSubmit(selectedCards);
     }
+
+    // Used after submission to save the hand history
+    // Copies elemtns to the sidebar and cleans up classes and IF's so they return for DOM queries
+    moveScoringElementsToSidebar(scoreLabel) {
+        const buttonParentClone = document.querySelector("#buttonParent").cloneNode(true);
+        const sidebarHeading = document.querySelector(".scoreSidebar h1");
+
+        sidebarHeading.after(buttonParentClone);
+        buttonParentClone.className = "scoreHand";
+        buttonParentClone.id = "oldButtonParent";
+
+
+        for (let child of buttonParentClone.children) {
+            child.className = `old${child.className}`;
+            console.log(`old${child.id}`);
+            child.id = `old${child.id}`;
+        }
+
+        buttonParentClone.appendChild(scoreLabel);
+    }
 }
 
 // The deuces wild game will manage most of the gameflow and call DOM Manager methods as needed
@@ -574,16 +653,15 @@ class deucesWildGame {
 
         this.deck = new Deck();        
         this.hand = new Hand(this.deck);
-        this.DOMManager = new DOMManager(this.hand, this.buttons, this);
-        this.scoringCalculator = new scoringCalculator(this.hand, false);
 
-
-
+        this.DOMManager = new DOMManager(this.buttons, this);
+        this.scoringCalculator = new scoringCalculator(false);
 
         this.DOMManager.createNewGameButtons();
         this.testCardReplacer(testCards);
-        this.DOMManager.setButtonsToCards();
+        this.DOMManager.setButtonsToCards(this.hand);
         this.DOMManager.listenForCardClicks();
+        this.DOMManager.listenForSubmitClicks();
     };
 
 
@@ -608,8 +686,9 @@ class deucesWildGame {
     restartDeucesHand() {
         this.deck.recreateDeck();
         this.hand.deucesDeal();
-        this.DOMManager.setButtonsToCards();
+        this.DOMManager.setButtonsToCards(this.hand);
     }
+
 
     // Game logic for on Submit, is called from DOM if DOM game
     onSubmit(selectedCards) {
@@ -623,13 +702,20 @@ class deucesWildGame {
                 i++;
             }
 
-            this.DOMManager.setButtonsToCards();
-
-
             console.log(`on Submit score: ${this.scoringCalculator.getScore(this.hand)}`)
-            this.DOMManager.addSubmitLabel(this.scoringCalculator.getScore(this.hand));
-        }
-    }
+            const scoreLabel = this.DOMManager.addSubmitLabel(this.scoringCalculator.getScore(this.hand));
+
+            this.DOMManager.setButtonsToCards(this.hand);
+            this.DOMManager.moveScoringElementsToSidebar(scoreLabel);
+
+            this.deck = new Deck();        
+            this.hand = new Hand(this.deck);
+                
+            this.DOMManager.createNewGameButtons();
+            this.DOMManager.setButtonsToCards(this.hand);
+            this.DOMManager.listenForCardClicks();
+            }
+}
 
     toString() {
         return `Game hand: ${this.hand}; Game DOMless: ${this.DOMless}`;
@@ -645,3 +731,7 @@ const testScorer = new scoringCalculator(false);
 console.log(`${testScorer.identifyFiveOfAKind(newGame.hand, false)}`);
 console.log(`number of gap ${newGame.hand.numberOfGaps().gap} ${newGame.hand.numberOfGaps().duplicates}`);
 console.log(`straight: ${testScorer.getScore(newGame.hand, false)}`);
+
+const intelCheck = new GameIntelligence();
+
+console.log(`combo generator check: ${intelCheck.generateCombinations(3, 3)}`);
