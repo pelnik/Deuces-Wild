@@ -1,0 +1,31 @@
+{
+  "name": "deuces-wild",
+  "version": "1.0.0",
+  "description": "Deuces Wild Video Poker Game",
+  "main": "game.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pelnik/Deuces-Wild.git"
+  },
+  "author": "Matt Pelnik",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/pelnik/Deuces-Wild/issues"
+  },
+  "homepage": "https://github.com/pelnik/Deuces-Wild#readme",
+  "devDependencies": {
+    "eslint": "^8.31.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-config-standard": "^17.0.0",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-n": "^15.6.0",
+    "eslint-plugin-promise": "^6.1.1"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
