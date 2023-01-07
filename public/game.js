@@ -1,5 +1,6 @@
-'use strict';
-
+// Import classes
+import Card from './modules/Card.js';
+import Deck from './modules/Deck.js';
 
 const header = document.querySelector('h1');
 const buttonFirstCard = document.querySelector('#firstCard');
@@ -10,86 +11,8 @@ const buttonFifthCard = document.querySelector('#fifthCard');
 
 const buttons = [buttonFirstCard, buttonSecondCard, buttonThirdCard, buttonFourthCard, buttonFifthCard]
 
-// Each card has a value, a suit, and a status of whether it's drawn or not
-class Card {
-  constructor(value, suit) {
-    this.value = value;
-    this.suit = suit;
-    this.drawn = false;
-  };
 
-  getSuit() {
-    return this.suit;
-  }
 
-  getValue() {
-    return this.value;
-  }
-
-  toString() {
-    return `${this.value} of ${this.suit}`;
-  }
-}
-
-// Deck objects to hold cards drawn and undrawn
-class Deck {
-  // Puts in all cards when instantiated
-  constructor() {
-    this.cards = [];
-    this.suits = ['Spades', 'Hearts', 'Clubs', 'Diamonds'];
-    this.values = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'Jack', 'Queen', 'King', 'Ace'];
-    for (const suit of this.suits) {
-      for (const value of this.values) {
-        this.cards.push(new Card(value, suit));
-      }
-    }
-  };
-
-  recreateDeck() { 
-    this.cards = [];
-    for (let suit of this.suits) {
-      for (let value of this.values) {
-        this.cards.push(new Card(value, suit));
-      }
-    }
-  };
-
-  //Returns a random undrawn card and marks it as drawn
-  drawCard() {
-    const undrawnCards = [...this.cards].filter((potentialCard) => {
-      return potentialCard.drawn === false
-    }
-    );
-
-    const drawnCard = undrawnCards[Math.floor(Math.random() * undrawnCards.length)];
-    drawnCard.drawn = true;
-
-    return drawnCard;
-  }
-
-  // Return a specific card in the deck, drawn or undrawn
-  queryCard(value, suit) {
-    for (const card of this.cards) {
-      if (card.getValue() === value && card.getSuit() === suit) {
-        return card;
-      }
-    }
-    
-    // Only runs if function doesn't return a card
-    throw new Error('Card not queried, give "Value Suit"');
-  }
-
-  // Just returns the card array to iterate through without twos
-  drawEntireDeckWithoutTwosArray() {
-    return [...this.cards].filter((potentialCard) => {
-      return potentialCard.value !== '2'
-    })
-  }
-
-  toString() {
-    return `${this.cards}`
-  }
-}
 
 
 
