@@ -45,6 +45,8 @@ export default class Deck {
 
     if (queriedCard === undefined) {
       throw new Error(`Card ${value} ${suit} not queried, give "Value Suit" and use the number keys`);
+    } else {
+      queriedCard.drawn = true;
     }
 
     return queriedCard;
