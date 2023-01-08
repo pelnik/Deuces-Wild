@@ -189,6 +189,7 @@ class deucesWildGame {
 
   // Will replace cards with testCards as needed since hand is dealt on creation
   // Will take any siize array with elementrs 'Value Suit'
+  // Mark card as drawn, repalced cards are also drawn
   testCardReplacer(testCards) {
     if (testCards !== undefined) {
       for (let i = 0; i < 5; i++) {

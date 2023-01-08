@@ -184,33 +184,36 @@ export default class ScoringCalculator {
   }
 
   // Wrapper for all same suit hand method, for consistency
-  identifyFlush(hand) {
+  static identifyFlush(hand) {
     return hand.identifyAllSameSuit();
   }
 
-  identifyStraight(hand) {
+  static identifyStraight(hand) {
     const numOfGapsObject = hand.numberOfGaps();
     const numOfTwosInHand = hand.withOnlyTwos().length;
 
     if (numOfTwosInHand < numOfGapsObject.gap || numOfGapsObject.duplicates !== 0) {
-      return false
-    } else {
-      return true
+      return false;
     }
+
+    return true;
   }
 
-  identifyThreeOfAKind(hand) {
+  static identifyThreeOfAKind(hand) {
     const allCards = hand.withTwosSortedLast();
 
-
-    if ([...allCards].filter((card) => {
-      return (card.getValue() === allCards[0].getValue() || card.getValue() === '2')
-    }).length === 3
-    ) {
-      return true
-    } else {
-      return false
+    const firstCardValue = allCards[0].getValue();
+    function threeOfAKindFilter(card) {
+      return card.getValue() === firstCardValue || card.getValue() === '2';
     }
+
+    const numberOfCardsMatchingValue = [...allCards].filter(threeOfAKindFilter).length;
+
+    if (numberOfCardsMatchingValue === 3) {
+      return true;
+    }
+
+    return false;
   }
 
   // Returns the score of hand passed in using handScores
@@ -236,13 +239,13 @@ export default class ScoringCalculator {
     if (ScoringCalculator.identifyFullHouse(hand) === true) {
       return this.handScores.fullHouse;
     }
-    if (this.identifyFlush(hand) === true) {
+    if (ScoringCalculator.identifyFlush(hand) === true) {
       return this.handScores.flush;
     }
-    if (this.identifyStraight(hand) === true) {
+    if (ScoringCalculator.identifyStraight(hand) === true) {
       return this.handScores.straight;
     }
-    if (this.identifyThreeOfAKind(hand) === true) {
+    if (ScoringCalculator.identifyThreeOfAKind(hand) === true) {
       return this.handScores.threeOfAKind;
     }
 
