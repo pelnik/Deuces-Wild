@@ -23,8 +23,8 @@ export default class ScoringCalculator {
   }
 
   // Returns true if hand is a royal flush
-  identifyNatRoyalFlush(hand) {
-    let suit;
+  static identifyNatRoyalFlush(hand) {
+    // This will track how many times each value is in hand.
     const cardsDrawn = {
       Ace: 0,
       King: 0,
@@ -33,142 +33,156 @@ export default class ScoringCalculator {
       10: 0,
     };
 
-    let count = 0;
-    for (const eachCard of hand.withTwosSortedLast()) {
-      if (count === 0) {
-        suit = eachCard.getSuit();
-      }
-
-      // If card value has already been drawn or doesn't have the same suit as first card, immediately returns false
-      if (eachCard.getSuit() !== suit || cardsDrawn[`${eachCard.getValue()}`] !== 0) {
-        return false;
-      } else if (count !== 4) {
-        cardsDrawn[`${eachCard.getValue()}`] = 1;
-      } else {
-        return true;
-      }
-
-      count++;
-    }
-  }
-  
-  identifyFourDeuces(hand) {
-    // Filters to cards with value of two and checks if length is 4
-    if (hand.getAllCards().filter((card) => {
-      return card.getValue() === '2'
-    }).length === 4) {
-      return true;
-    } else {
+    // Natural royal flush by definition can't have twos
+    // Check suit and check if there are any twos reject if not all same
+    const onlyTwos = hand.withOnlyTwos();
+    if (!hand.identifyAllSameSuit() || onlyTwos.length !== 0) {
       return false;
     }
+
+    // Check values of cards and check that each is found and is not drawn twice
+    const allCards = hand.getAllCards();
+    const allRoyalCheck = allCards.map((card) => {
+      const cardValue = card.getValue();
+      const isRoyalValue = cardsDrawn[cardValue];
+
+      if (isRoyalValue !== undefined) {
+        cardsDrawn[cardValue] += 1;
+      }
+
+      return isRoyalValue;
+    });
+
+    // Check if all returned zero, meaning none were drawn twice, or not in the Royal Cards object
+    if (allRoyalCheck.every((isRoyalValue) => isRoyalValue === 0)) {
+      return true;
+    }
+
+    return false;
   }
 
-  identifyWildRoyalFlush(hand) {
-    let suit;
+  static identifyFourDeuces(hand) {
+    // Filters to cards with value of two and checks if length is 4
+    const onlyTwos = hand.withOnlyTwos();
+
+    return onlyTwos.length === 4;
+  }
+
+  static identifyWildRoyalFlush(hand) {
     const cardsDrawn = {
-      'Ace': 0,
-      'King': 0,
-      'Queen': 0,
-      'Jack': 0,
-      '10': 0
+      Ace: 0,
+      King: 0,
+      Queen: 0,
+      Jack: 0,
+      10: 0,
+    };
+
+    // Check suit
+    if (!hand.identifyAllSameSuit()) {
+      return false;
     }
 
-    let count = 0;
-    for (const eachCard of hand.withTwosSortedLast()) {
-      if (count === 0) {
-        suit = eachCard.getSuit();
+    // Check values of cards and check that each is found and is not drawn twice
+    // Twos don't need to be checked, they'll fill in where needed
+    const noTwos = hand.withNoTwos();
+    const allRoyalCheck = noTwos.map((card) => {
+      const cardValue = card.getValue();
+      const isRoyalValue = cardsDrawn[cardValue];
+
+      if (isRoyalValue !== undefined) {
+        cardsDrawn[cardValue] += 1;
       }
 
-      // If card value has already been drawn or doesn't have the same suit as first card, immediately returns false
-      if ((eachCard.getSuit() !== suit || cardsDrawn[`${eachCard.getValue()}`] !== 0) && eachCard.getValue() !== '2') {
-        return false;
-      } else if (count !== 4) {
-        cardsDrawn[`${eachCard.getValue()}`] = 1;
-      } else {
-        return true;
-      }
+      return isRoyalValue;
+    });
 
-      count++;
+    // Check if all returned zero, meaning none were drawn twice, or not in the Royal Cards object
+    if (allRoyalCheck.every((isRoyalValue) => isRoyalValue === 0)) {
+      return true;
     }
+
+    return false;
   }
 
-  identifyFiveOfAKind(hand) {
+  static identifyFiveOfAKind(hand) {
     const allCards = hand.withTwosSortedLast();
 
-
-    if ([...allCards].filter((card) => {
-      return (card.getValue() === allCards[0].getValue() || card.getValue() === '2')
-    }).length === 5
-    ) {
-      return true
-    } else {
-      return false
+    const firstCardValue = allCards[0].getValue();
+    function fiveOfAKindFilter(card) {
+      return card.getValue() === firstCardValue || card.getValue() === '2';
     }
+
+    const numberOfCardsMatchingValue = [...allCards].filter(fiveOfAKindFilter).length;
+
+    if (numberOfCardsMatchingValue === 5) {
+      return true;
+    }
+
+    return false;
   }
 
   // Identifies straight flushes
-  identifyStraightFlush(hand) {
+  static identifyStraightFlush(hand) {
     // Checks if all non-two cards are the same suit
     if (hand.identifyAllSameSuit() === false) {
-      return false
+      return false;
     }
 
     const numOfGapsObject = hand.numberOfGaps();
 
     if (numOfGapsObject.duplicates !== 0) {
       return false;
-    } else if (numOfGapsObject.gap > hand.withOnlyTwos().length) {
+    }
+    if (numOfGapsObject.gap > hand.withOnlyTwos().length) {
       return false;
-    } else {
-      return true
     }
 
+    return true;
   }
 
-  identifyFourOfAKind(hand) {
+  static identifyFourOfAKind(hand) {
     const allCards = hand.withTwosSortedLast();
 
-
-    if ([...allCards].filter((card) => {
-      return (card.getValue() === allCards[0].getValue() || card.getValue() === '2')
-    }).length === 4
-    ) {
-      return true
-    } else {
-      return false
-    }
-  }
-
-
-  identifyFullHouse(hand) {
-    // Tests if only two numbers exist of the non-Twos. 
-    // Will ensure that four of a value doesn't exist. Shouldn't practically matter since four of a kind
-    // will always be checked first, but better to be defensive!
-    const numberOfEachCardValue = {};
-
-    for (const card of hand.withNoTwos()) {
-      if (card.getValue() in numberOfEachCardValue) {
-        numberOfEachCardValue[card.getValue()] += 1;
-      } else {
-        numberOfEachCardValue[card.getValue()] = 1;
-      }
+    const firstCardValue = allCards[0].getValue();
+    function fiveOfAKindFilter(card) {
+      return card.getValue() === firstCardValue || card.getValue() === '2';
     }
 
-    if (Object.keys(numberOfEachCardValue).length > 2) {
-      return false;
-    } else {
-      // Check for four of a kind, which is not a full house
-      for (const numberofEach of Object.values(numberOfEachCardValue)) {
-        if (numberofEach === 4) {
-          return false;
-        }
-      }
+    const numberOfCardsMatchingValue = [...allCards].filter(fiveOfAKindFilter).length;
 
-      // If passed all above, return true
+    if (numberOfCardsMatchingValue === 4) {
       return true;
     }
+
+    return false;
   }
-  
+
+  static identifyFullHouse(hand) {
+    // Tests if only two numbers exist of the non-Twos.
+    // Will ensure that four of a value doesn't exist.
+    // Shouldn't practically matter since four of a kind
+    // will always be checked first, but better to be defensive!
+    const numberOfEachValue = {};
+
+    hand.withNoTwos().forEach((card) => {
+      const cardValue = card.getValue();
+      if (Object.hasOwn(numberOfEachValue, cardValue)) {
+        numberOfEachValue[cardValue] += 1;
+      } else {
+        numberOfEachValue[cardValue] = 1;
+      }
+    });
+
+    const fourOfAnyValueCheck = Object.values(numberOfEachValue).some((value) => value === 4);
+
+    if (Object.values(numberOfEachValue).length > 2 || fourOfAnyValueCheck === true) {
+      return false;
+    }
+
+    // If passed all above, return true
+    return true;
+  }
+
   // Wrapper for all same suit hand method, for consistency
   identifyFlush(hand) {
     return hand.identifyAllSameSuit();
@@ -201,25 +215,25 @@ export default class ScoringCalculator {
 
   // Returns the score of hand passed in using handScores
   getScore(hand) {
-    if (this.identifyNatRoyalFlush(hand) === true) {
+    if (ScoringCalculator.identifyNatRoyalFlush(hand) === true) {
       return this.handScores.natRoyalFlush;
     }
-    if (this.identifyFourDeuces(hand) === true) {
+    if (ScoringCalculator.identifyFourDeuces(hand) === true) {
       return this.handScores.fourDeuces;
     }
-    if (this.identifyWildRoyalFlush(hand) === true) {
+    if (ScoringCalculator.identifyWildRoyalFlush(hand) === true) {
       return this.handScores.wildRoyalFlush;
     }
-    if (this.identifyFiveOfAKind(hand) === true) {
+    if (ScoringCalculator.identifyFiveOfAKind(hand) === true) {
       return this.handScores.fiveOfAKind;
     }
-    if (this.identifyStraightFlush(hand) === true) {
+    if (ScoringCalculator.identifyStraightFlush(hand) === true) {
       return this.handScores.straightFlush;
     }
-    if (this.identifyFourOfAKind(hand) === true) {
+    if (ScoringCalculator.identifyFourOfAKind(hand) === true) {
       return this.handScores.fourOfAKind;
     }
-    if (this.identifyFullHouse(hand) === true) {
+    if (ScoringCalculator.identifyFullHouse(hand) === true) {
       return this.handScores.fullHouse;
     }
     if (this.identifyFlush(hand) === true) {
@@ -235,20 +249,18 @@ export default class ScoringCalculator {
     return 0;
   }
 
-  // This will give an expected score of a certain hand within a certain confidence interval, given out of 100, (99.9 receommended)
-  runScoringIterations(hand, handcombos, CI) {
-    // The code will check the calculated confidence interval after the number of iterations gone by for each set
-    let set = 100;
-    expectedCI = CI === undefined ? 99.9 : CI;
+  // This will give an expected score of a certain hand within a certain
+  // confidence interval, given out of 100, (99.9 receommended)
+  // runScoringIterations(hand, handcombos, CI) {
+  //   // The code will check the calculated confidence interval after the
+  // number of iterations gone by for each set
+  //   let set = 100;
+  //   expectedCI = CI === undefined ? 99.9 : CI;
 
-    // This will track the score history of the hand
-    scoreHistory = [];
+  //   // This will track the score history of the hand
+  //   scoreHistory = [];
 
-    handWithNoTwos = hand.withNoTwos();
-    handwithOnlyTwos = hand.withOnlyTwos();
-
-    for (combo of handcombos) {
-      
-    }
-  }
+  //   handWithNoTwos = hand.withNoTwos();
+  //   handwithOnlyTwos = hand.withOnlyTwos();
+  // }
 }

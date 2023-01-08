@@ -5,7 +5,7 @@
   "main": "game.js",
   "scripts": {
     "start": "node server.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node --experimental-vm-modules node_modules/.bin/jest"
   },
   "repository": {
     "type": "git",
@@ -13,6 +13,7 @@
   },
   "author": "Matt Pelnik",
   "license": "ISC",
+  "type": "module",
   "bugs": {
     "url": "https://github.com/pelnik/Deuces-Wild/issues"
   },
@@ -26,6 +27,7 @@
     "eslint-plugin-promise": "^6.1.1"
   },
   "dependencies": {
-    "express": "^4.18.2"
+    "express": "^4.18.2",
+    "jest": "^29.3.1"
   }
 }

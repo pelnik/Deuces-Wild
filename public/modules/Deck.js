@@ -57,6 +57,11 @@ export default class Deck {
     return [...this.cards].filter((potentialCard) => potentialCard.value !== '2');
   }
 
+  // Returns entire deck in array
+  getEntireDeck() {
+    return [...this.cards];
+  }
+
   toString() {
     return `${this.cards}`;
   }
