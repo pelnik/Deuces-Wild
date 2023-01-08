@@ -1,9 +1,15 @@
 // The hand will hold 5 cards, for Deuces Wild
+// defaultHand should be an array of strings specifying card
 export default class Hand {
-  constructor(drawDeck) {
+  constructor(drawDeck, defaultHand) {
     this.cards = [];
     this.drawDeck = drawDeck;
     this.deucesDeal();
+
+    if (defaultHand !== undefined) {
+      this.defaultHand = defaultHand;
+      this.setDefaultHand();
+    }
   }
 
   // Clears the hand and marks each card as undrawn
@@ -24,6 +30,18 @@ export default class Hand {
     return [...this.cards];
   }
 
+  // Sets the default hand, keeps previously drawn cards marked as drawn
+  setDefaultHand() {
+    this.defaultHand.forEach((cardQuery, i) => {
+      // Break out card query
+      const valueSuitSplit = cardQuery.split(' ');
+      const cardValue = valueSuitSplit[0];
+      const cardSuit = valueSuitSplit[1];
+
+      this.cards[i] = this.drawDeck.queryCard(cardValue, cardSuit);
+    });
+  }
+
   deucesDeal() {
     for (let i = 0; i < 5; i += 1) {
       this.addCard(this.drawDeck.drawCard());
@@ -40,6 +58,7 @@ export default class Hand {
 
   // Manually replace one card, if value and suit not specified
   // The card is random undrawn card and gets marked as drawn
+  // Card always marked as drawn
   replaceCard(cardIndexToReplace, value, suit) {
     if (value === undefined || suit === undefined) {
       this.cards[cardIndexToReplace] = this.drawDeck.drawCard();
