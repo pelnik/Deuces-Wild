@@ -113,7 +113,7 @@ export default class DOMManager {
     imageParentClone.id = 'oldImageParent';
 
     DOMManager.changeChildClassesToOld(imageParentClone);
-
+    DOMManager.removeOldSidebarHands();
     imageParentClone.appendChild(scoreLabel);
   }
 
@@ -132,6 +132,17 @@ export default class DOMManager {
       }
 
       child.id = `old${child.id}`;
+    }
+  }
+
+  static removeOldSidebarHands() {
+    const numberOfHandsToKeep = 10;
+
+    const imageParents = document.querySelectorAll('.scoreHand');
+    const numberOfHands = imageParents.length;
+
+    if (numberOfHands > numberOfHandsToKeep) {
+      imageParents[numberOfHands - 1].remove();
     }
   }
 }
