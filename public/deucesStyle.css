@@ -34,3 +34,13 @@
     width: 120px;
     height: 168px;
 }
+
+.oldcardImage {
+    width: 45px;
+    height: 63px;
+}
+
+.scoreLabel {
+    margin-top: 0px;
+    margin-bottom: 0px;
+}

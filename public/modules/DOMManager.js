@@ -19,7 +19,7 @@ export default class DOMManager {
       imageFifthCard,
     ];
 
-    this.cardImageIDs = ['testfirstCard', 'testsecondCard', 'testthirdCard', 'testfourthCard', 'testfifthCard'];
+    this.cardImageIDs = ['firstCard', 'secondCard', 'thirdCard', 'fourthCard', 'fifthCard'];
     this.submitButton = document.querySelector('#submitButton');
     this.cardsSubmitted = false;
   }
@@ -74,18 +74,7 @@ export default class DOMManager {
     this.submitButton.addEventListener('click', this.onSubmitButtonClick.bind(this));
   }
 
-  // Adds the submit label and returns it
-  static addSubmitLabel(score) {
-    const submitLabel = document.createElement('label');
-    submitLabel.textContent = `Great job! Score: ${score}`;
-
-    // Get parent div for submit button
-    const parentSubmitDiv = document.querySelector('#parentSubmitButton');
-    parentSubmitDiv.appendChild(submitLabel);
-
-    return submitLabel;
-  }
-
+  // Event listener function
   onSubmitButtonClick() {
     const selectedCards = [false, false, false, false, false];
     const selectedDOMCards = document.querySelectorAll('.selectedCard');
@@ -98,6 +87,21 @@ export default class DOMManager {
     this.gameParent.onSubmit(selectedCards);
   }
 
+  // Adds the submit label and returns it
+  // Called form game manager since hand access needed
+  static addSubmitLabel(score) {
+    const submitLabel = document.createElement('p');
+    submitLabel.className = 'scoreLabel';
+
+    submitLabel.textContent = `Great job! Score: ${score}`;
+
+    // Get parent div for submit button
+    const parentSubmitDiv = document.querySelector('#parentSubmitButton');
+    parentSubmitDiv.appendChild(submitLabel);
+
+    return submitLabel;
+  }
+
   // Used after submission to save the hand history
   // Copies elemtns to the sidebar and cleans up classes and IF's so they return for DOM queries
   moveScoringElementsToSidebar(scoreLabel) {
@@ -108,13 +112,26 @@ export default class DOMManager {
     imageParentClone.className = 'scoreHand';
     imageParentClone.id = 'oldImageParent';
 
-    for (let i = 0; i < imageParentClone.children; i += 1) {
-      const child = imageParentClone.children[i];
-
-      child.className = `old${child.className}`;
-      child.id = `old${child.id}`;
-    }
+    DOMManager.changeChildClassesToOld(imageParentClone);
 
     imageParentClone.appendChild(scoreLabel);
+  }
+
+  static changeChildClassesToOld(imageParentClone) {
+    for (let i = 0; i < imageParentClone.children.length; i += 1) {
+      const child = imageParentClone.children[i];
+      const childClasses = child.classList;
+
+      // Copy the clas list because we need to modify the original while iterating through it
+      const classListCopy = [...child.classList];
+      for (let j = 0; j < classListCopy.length; j += 1) {
+        const oldClassName = classListCopy[j];
+
+        childClasses.remove(`${oldClassName}`);
+        childClasses.add(`old${oldClassName}`);
+      }
+
+      child.id = `old${child.id}`;
+    }
   }
 }
