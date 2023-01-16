@@ -1,10 +1,25 @@
 // The DOMManager will manage all interactions with the buttons and game screen
 export default class DOMManager {
-  constructor(buttons, gameParent) {
-    this.buttons = buttons;
+  constructor(gameParent) {
     this.gameParent = gameParent;
 
-    this.buttonIDs = ['firstCard', 'secondCard', 'thirdCard', 'fourthCard', 'fifthCard'];
+    this.imageParent = document.querySelector('#imageParent');
+
+    const imageFirstCard = document.querySelector('#firstCard');
+    const imageSecondCard = document.querySelector('#secondCard');
+    const imageThirdCard = document.querySelector('#thirdCard');
+    const imageFourthCard = document.querySelector('#fourthCard');
+    const imageFifthCard = document.querySelector('#fifthCard');
+
+    this.cardImages = [
+      imageFirstCard,
+      imageSecondCard,
+      imageThirdCard,
+      imageFourthCard,
+      imageFifthCard,
+    ];
+
+    this.cardImageIDs = ['testfirstCard', 'testsecondCard', 'testthirdCard', 'testfourthCard', 'testfifthCard'];
     this.submitButton = document.querySelector('#submitButton');
     this.cardsSubmitted = false;
   }
@@ -13,46 +28,50 @@ export default class DOMManager {
   // Does not have any card based interactions
   createNewGameButtons() {
     for (let i = 0; i < 5; i += 1) {
-      const newButton = document.createElement('button');
-      const buttonElementParent = document.querySelector('#buttonParent');
+      const newcardImage = document.createElement('img');
+      const imageElementParent = document.querySelector('#imageParent');
 
-      newButton.className = 'unselectedCard';
-      newButton.id = this.buttonIDs[i];
+      newcardImage.className = 'unselectedCard cardImage';
+      newcardImage.id = this.cardImageIDs[i];
 
-      buttonElementParent.replaceChild(newButton, this.buttons[i]);
-      this.buttons[i] = newButton;
+      imageElementParent.replaceChild(newcardImage, this.cardImages[i]);
+      this.cardImages[i] = newcardImage;
     }
   }
 
-  // Update buttons to text values of cards
+  // Update images to text values of cards
   // Updates hand value
   // if testCards have been passed, will assign those cards instead
-  setButtonsToCards(hand) {
+  setImagesToCards(hand) {
     for (let i = 0; i < 5; i += 1) {
-      this.buttons[i].textContent = `${hand.getAllCards()[i]}`;
+      const currentCard = hand.getAllCards()[i];
+      const suitValue = `${currentCard.getValue()} ${currentCard.getSuit()}`;
+
+      const currentDOMCard = this.cardImages[i];
+      currentDOMCard.src = `/Media/${suitValue}.png`;
     }
   }
 
   // Add onClick event listeners for cards and submit
   listenForCardClicks() {
-    this.buttons.forEach((button) => {
-      button.addEventListener('click', DOMManager.onClickButtonChange);
+    this.cardImages.forEach((cardImage) => {
+      cardImage.addEventListener('click', DOMManager.onClickImageChange);
     });
+  }
+
+  // Change card imagess
+  static onClickImageChange(evt) {
+    const event = evt;
+
+    if (evt.target.className === 'unselectedCard cardImage') {
+      event.target.className = 'selectedCard cardImage';
+    } else {
+      event.target.className = 'unselectedCard cardImage';
+    }
   }
 
   listenForSubmitClicks() {
     this.submitButton.addEventListener('click', this.onSubmitButtonClick.bind(this));
-  }
-
-  // Change card buttons
-  static onClickButtonChange(evt) {
-    const event = evt;
-
-    if (evt.target.className === 'unselectedCard') {
-      event.target.className = 'selectedCard';
-    } else {
-      event.target.className = 'unselectedCard';
-    }
   }
 
   // Adds the submit label and returns it
@@ -72,7 +91,7 @@ export default class DOMManager {
     const selectedDOMCards = document.querySelectorAll('.selectedCard');
 
     selectedDOMCards.forEach((DOMcardElement) => {
-      const cardIndex = this.buttonIDs.indexOf(`${DOMcardElement.id}`);
+      const cardIndex = this.cardImageIDs.indexOf(`${DOMcardElement.id}`);
       selectedCards[cardIndex] = true;
     });
 
@@ -81,22 +100,21 @@ export default class DOMManager {
 
   // Used after submission to save the hand history
   // Copies elemtns to the sidebar and cleans up classes and IF's so they return for DOM queries
-  static moveScoringElementsToSidebar(scoreLabel) {
-    const buttonParentClone = document.querySelector('#buttonParent').cloneNode(true);
+  moveScoringElementsToSidebar(scoreLabel) {
+    const imageParentClone = this.imageParent.cloneNode(true);
     const sidebarHeading = document.querySelector('.scoreSidebar h1');
 
-    sidebarHeading.after(buttonParentClone);
-    buttonParentClone.className = 'scoreHand';
-    buttonParentClone.id = 'oldButtonParent';
+    sidebarHeading.after(imageParentClone);
+    imageParentClone.className = 'scoreHand';
+    imageParentClone.id = 'oldImageParent';
 
-    // The preferred forEach syntax doesn't work on HTML collected like .children
-    for (let i = 0; i < buttonParentClone.children; i += 1) {
-      const child = buttonParentClone.children[i];
+    for (let i = 0; i < imageParentClone.children; i += 1) {
+      const child = imageParentClone.children[i];
 
       child.className = `old${child.className}`;
       child.id = `old${child.id}`;
     }
 
-    buttonParentClone.appendChild(scoreLabel);
+    imageParentClone.appendChild(scoreLabel);
   }
 }

@@ -1,5 +1,5 @@
 .selectedCard {
-    border-color: #e7ee10;
+    border: 5px solid #e7ee10;
 }
 
 .correctCard {
@@ -28,4 +28,9 @@
     height: auto;
     border: thin solid black;
     padding: 10px;
+}
+
+.cardImage {
+    width: 120px;
+    height: 168px;
 }

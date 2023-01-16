@@ -3,21 +3,7 @@ import ScoringCalculator from './modules/ScoringCalculator.js';
 import GameIntelligence from './modules/GameIntelligence.js';
 import DeucesWildGame from './modules/DeucesWildGame.js';
 
-const buttonFirstCard = document.querySelector('#firstCard');
-const buttonSecondCard = document.querySelector('#secondCard');
-const buttonThirdCard = document.querySelector('#thirdCard');
-const buttonFourthCard = document.querySelector('#fourthCard');
-const buttonFifthCard = document.querySelector('#fifthCard');
-
-const buttons = [
-  buttonFirstCard,
-  buttonSecondCard,
-  buttonThirdCard,
-  buttonFourthCard,
-  buttonFifthCard,
-];
-
-const newGame = new DeucesWildGame(false, buttons, ['King Hearts', '3 Clubs', '3 Diamonds', '3 Spades', '3 Hearts']);
+const newGame = new DeucesWildGame(false, ['King Hearts', '3 Clubs', '3 Diamonds', '3 Spades', '3 Hearts']);
 
 // test
 console.log(`${newGame.hand}`);

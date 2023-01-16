@@ -8,20 +8,19 @@ import DOMManager from './DOMManager.js';
 // testCards will take an array that with string 'Value Suit'
 // that will manually set cards for testing
 export default class DeucesWildGame {
-  constructor(DOMless, buttons, testCards) {
+  constructor(DOMless, testCards) {
     this.DOMless = DOMless;
-    this.buttons = buttons;
     this.testCards = testCards;
 
     this.deck = new Deck();
     this.hand = new Hand(this.deck);
 
-    this.DOMManager = new DOMManager(this.buttons, this);
+    this.DOMManager = new DOMManager(this);
     this.ScoringCalculator = new ScoringCalculator(false);
 
     this.DOMManager.createNewGameButtons();
     this.testCardReplacer(testCards);
-    this.DOMManager.setButtonsToCards(this.hand);
+    this.DOMManager.setImagesToCards(this.hand);
     this.DOMManager.listenForCardClicks();
     this.DOMManager.listenForSubmitClicks();
   }
@@ -46,7 +45,7 @@ export default class DeucesWildGame {
   restartDeucesHand() {
     this.deck.recreateDeck();
     this.hand.deucesDeal();
-    this.DOMManager.setButtonsToCards(this.hand);
+    this.DOMManager.setImagesToCards(this.hand);
   }
 
   // Game logic for on Submit, is called from DOM if DOM game
@@ -61,14 +60,14 @@ export default class DeucesWildGame {
 
       const scoreLabel = DOMManager.addSubmitLabel(this.ScoringCalculator.getScore(this.hand));
 
-      this.DOMManager.setButtonsToCards(this.hand);
-      DOMManager.moveScoringElementsToSidebar(scoreLabel);
+      this.DOMManager.setImagesToCards(this.hand);
+      this.DOMManager.moveScoringElementsToSidebar(scoreLabel);
 
       this.deck = new Deck();
       this.hand = new Hand(this.deck);
 
       this.DOMManager.createNewGameButtons();
-      this.DOMManager.setButtonsToCards(this.hand);
+      this.DOMManager.setImagesToCards(this.hand);
       this.DOMManager.listenForCardClicks();
     }
   }
