@@ -4,7 +4,7 @@
   "description": "Deuces Wild Video Poker Game",
   "main": "game.js",
   "scripts": {
-    "start": "node server.js",
+    "start": "node server.cjs",
     "test": "node --experimental-vm-modules node_modules/.bin/jest"
   },
   "repository": {
