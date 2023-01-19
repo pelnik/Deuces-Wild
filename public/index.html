@@ -8,41 +8,46 @@
     <link rel="stylesheet" href="deucesStyle.css">
 </head>
 <body>
-    <div class="gameBoard">
-        <img src="./Media/2 Hearts logo.png" id="logo">
+    <div id="fullWindow">
+        <img src="./Media/2 Hearts logo.png" id="logo">        
+        <div class="gameBoard">
+            <!--Add play button-->
+            <div>
+                <button type="button" id="playGame">Play Game!</button><br><br><br>
+            </div>
+            
+            <!--Add buttons-->
+            <div id="imageParent">
+                <img class="unselectedCard cardImage" id="firstCard">
+                <img class="unselectedCard cardImage" id="secondCard">
+                <img class="unselectedCard cardImage" id="thirdCard">
+                <img class="unselectedCard cardImage" id="fourthCard">
+                <img class="unselectedCard cardImage" id="fifthCard">
+            </div>
 
-        <!--Add play button-->
-        <div>
-            <button type="button" id="playGame">Play Game!</button><br><br><br>
+            <div id="parentSubmitButton">
+                <button type="button" id="submitButton">Submit!</button>
+            </div>
         </div>
-        
-        <!--Add buttons-->
-        <div id="imageParent">
-            <img class="unselectedCard cardImage" id="firstCard">
-            <img class="unselectedCard cardImage" id="secondCard">
-            <img class="unselectedCard cardImage" id="thirdCard">
-            <img class="unselectedCard cardImage" id="fourthCard">
-            <img class="unselectedCard cardImage" id="fifthCard">
-        </div>
+
+
+
+        <!--Sidebar div-->
+        <img  src="./Media/right-angle-arrow-bold-icon.svg" id="sidebarArrow">
+        <div class="scoreSidebar">
+            <div id="sidebarHeaderContainer">
+                <h1 id="sidebarMainHeader">Scoring Sidebar</h1>
+            </div>
+
+
+            <div class="scoreHand">
+                "Example hand 2"
+            </div>
+            <div class="scoreHand">
+                "Example hand 1"
+            </div>
+        </div>      
     </div>
-
-    <div id="parentSubmitButton">
-        <br>
-        <br>
-        <button type="button" id="submitButton">Submit!</button>
-    </div>
-
-    <!--Sidebar div-->
-    <div class="scoreSidebar">
-        <h1>Scoring Sidebar</h1>
-        <div class="scoreHand">
-            "Example hand 2"
-        </div>
-        <div class="scoreHand">
-            "Example hand 1"
-        </div>
-    </div>
-
     
     <!--Run JS-->
     <script type="module" src="game.js"></script>
