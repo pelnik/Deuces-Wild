@@ -63,3 +63,38 @@ test('Full House 1', () => {
 
   expect(calc.getScore(hand)).toBe(3);
 })
+
+test('Four of a Kind 1', () => {
+  const hand = new Hand(new Deck(), ["Ace Hearts", "3 Hearts", "3 Diamonds", "3 Clubs", "3 Spades"]);
+  const calc = new ScoringCalculator();
+
+  expect(calc.getScore(hand)).toBe(5);
+})
+
+test('Three of a Kind 1', () => {
+  const hand = new Hand(new Deck(), ["Ace Hearts", "3 Hearts", "3 Diamonds", "2 Clubs", "6 Spades"]);
+  const calc = new ScoringCalculator();
+
+  expect(calc.getScore(hand)).toBe(1);
+})
+
+test('Three of a Kind 2', () => {
+  const hand = new Hand(new Deck(), ["Ace Hearts", "3 Hearts", "3 Diamonds", "3 Clubs", "6 Spades"]);
+  const calc = new ScoringCalculator();
+
+  expect(calc.getScore(hand)).toBe(1);
+})
+
+test('No Hand 1', () => {
+  const hand = new Hand(new Deck(), ["Ace Hearts", "3 Hearts", "10 Diamonds", "3 Clubs", "6 Spades"]);
+  const calc = new ScoringCalculator();
+
+  expect(calc.getScore(hand)).toBe(0);
+})
+
+test('No Hand 2', () => {
+  const hand = new Hand(new Deck(), ["Ace Hearts", "3 Hearts", "10 Diamonds", "2 Clubs", "6 Spades"]);
+  const calc = new ScoringCalculator();
+
+  expect(calc.getScore(hand)).toBe(0);
+})

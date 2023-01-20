@@ -141,17 +141,18 @@ export default class ScoringCalculator {
   }
 
   static identifyFourOfAKind(hand) {
-    const allCards = hand.withTwosSortedLast();
+    const withNoTwos = hand.withNoTwos();
 
-    const firstCardValue = allCards[0].getValue();
-    function fiveOfAKindFilter(card) {
-      return card.getValue() === firstCardValue || card.getValue() === '2';
-    }
+    // This isn't the most efficient, O(n^2) but is much clearer than alternatives
+    // and negligible since iterating through only 5 items
+    for (let i = 0; i < withNoTwos.length; i += 1) {
+      const card = withNoTwos[i];
 
-    const numberOfCardsMatchingValue = [...allCards].filter(fiveOfAKindFilter).length;
-
-    if (numberOfCardsMatchingValue === 4) {
-      return true;
+      const numberWithSameValue = hand.withSameValue(card.getValue()).length;
+      const numberOfTwos = hand.withOnlyTwos().length;
+      if (numberWithSameValue + numberOfTwos >= 4) {
+        return true;
+      }
     }
 
     return false;
@@ -200,17 +201,18 @@ export default class ScoringCalculator {
   }
 
   static identifyThreeOfAKind(hand) {
-    const allCards = hand.withTwosSortedLast();
+    const withNoTwos = hand.withNoTwos();
 
-    const firstCardValue = allCards[0].getValue();
-    function threeOfAKindFilter(card) {
-      return card.getValue() === firstCardValue || card.getValue() === '2';
-    }
+    // This isn't the most efficient, O(n^2) but is much clearer than alternatives
+    // and negligible since iterating through only 5 items
+    for (let i = 0; i < withNoTwos.length; i += 1) {
+      const card = withNoTwos[i];
 
-    const numberOfCardsMatchingValue = [...allCards].filter(threeOfAKindFilter).length;
-
-    if (numberOfCardsMatchingValue === 3) {
-      return true;
+      const numberWithSameValue = hand.withSameValue(card.getValue()).length;
+      const numberOfTwos = hand.withOnlyTwos().length;
+      if (numberWithSameValue + numberOfTwos >= 3) {
+        return true;
+      }
     }
 
     return false;

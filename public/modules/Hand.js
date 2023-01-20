@@ -82,6 +82,10 @@ export default class Hand {
     return this.withNoTwos().concat(this.withOnlyTwos());
   }
 
+  withSameValue(value) {
+    return [...this.cards].filter((card) => card.getValue() === value);
+  }
+
   // Identify if all cards are the same suit for flushes, ignores twos
   identifyAllSameSuit() {
     const handWithNoTwos = this.withNoTwos();

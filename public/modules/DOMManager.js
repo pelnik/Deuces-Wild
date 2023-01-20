@@ -120,7 +120,7 @@ export default class DOMManager {
     const submitLabel = document.createElement('p');
     submitLabel.className = 'scoreLabel';
 
-    submitLabel.textContent = `Great job! Score: ${score}`;
+    submitLabel.textContent = `Score: ${score}`;
 
     // Get parent div for submit button
     const parentSubmitDiv = document.querySelector('#parentSubmitButton');
@@ -133,9 +133,9 @@ export default class DOMManager {
   // Copies elemtns to the sidebar and cleans up classes and IF's so they return for DOM queries
   moveScoringElementsToSidebar(scoreLabel) {
     const imageParentClone = this.imageParent.cloneNode(true);
-    const sidebarHeading = document.querySelector('.scoreSidebar h1');
+    const sidebarHeaderContainer = document.querySelector('#sidebarHeaderContainer');
 
-    sidebarHeading.after(imageParentClone);
+    sidebarHeaderContainer.after(imageParentClone);
     imageParentClone.className = 'scoreHand';
     imageParentClone.id = 'oldImageParent';
 
