@@ -23,6 +23,7 @@ export default class DeucesWildGame {
     this.DOMManager.setImagesToCards(this.hand);
     this.DOMManager.listenForCardClicks();
     this.DOMManager.listenForSubmitClicks();
+    DOMManager.listenForSidebarOpenClose();
   }
 
   // Will replace cards with testCards as needed since hand is dealt on creation

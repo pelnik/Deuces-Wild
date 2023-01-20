@@ -87,6 +87,33 @@ export default class DOMManager {
     this.gameParent.onSubmit(selectedCards);
   }
 
+  static listenForSidebarOpenClose() {
+    const sidebarArrow = document.querySelector('#sidebarArrow');
+    const scoreSidebar = document.querySelector('.scoreSidebar');
+
+    function sidebarArrowClick() {
+      const fullWindow = document.getElementById('fullWindow');
+      const currentColumns = window.getComputedStyle(fullWindow).gridTemplateColumns;
+
+      // Regular expressions
+      const sidebarOpenRegExp = / 320px/;
+      const sidebarClosedRegExp = / 50px/;
+
+      if (sidebarClosedRegExp.test(currentColumns)) {
+        fullWindow.style.gridTemplateColumns = 'auto 320px';
+        scoreSidebar.style.visibility = 'visible';
+        sidebarArrow.style.transform = 'rotate(0deg)';
+      } else if (sidebarOpenRegExp.test(currentColumns)) {
+        fullWindow.style.gridTemplateColumns = 'auto 50px';
+        scoreSidebar.style.visibility = 'hidden';
+        sidebarArrow.style.transform = 'rotate(180deg)';
+        sidebarArrow.style.visibility = 'visible';
+      }
+    }
+
+    sidebarArrow.addEventListener('click', sidebarArrowClick);
+  }
+
   // Adds the submit label and returns it
   // Called form game manager since hand access needed
   static addSubmitLabel(score) {

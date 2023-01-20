@@ -12,10 +12,31 @@ body {
     gap: 10px;
 }
 
+@media screen and (max-width: 950px) {
+    #fullWindow {
+        grid-template-columns: auto 50px;
+    }
+
+    .scoreSidebar {
+        visibility: hidden;
+    }
+
+    #sidebarArrow {
+        visibility: visible;
+        transform: rotate(180deg);
+    }
+}
+
 #parentSubmitButton {
     display: block;
     top: 0;
     left: 0;
+}
+
+#imageParent {
+    width: fit-content;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .cardImage {
@@ -44,26 +65,16 @@ body {
     right: 0;
     background-color: rgb(255, 255, 255); /* Black */
     padding: 20px;
+    padding-right: 8px;
     border-left: thick solid gray;
     grid-column: 2;
     grid-row: 1 / 5;
     overflow: hidden;
-}
-
-@keyframes sideBarSlideOut {
-    from {
-        width: 320px;
-    }
-
-    to {
-        width: 10px;
-    }
+    position: relative;
 }
 
 
 #sidebarArrow {
-    grid-row: 1;
-    grid-column: 2;
     width: 20px;
     height: auto;
     left: 0;
@@ -72,6 +83,7 @@ body {
     padding: 4px;
     border: solid 1px;
     margin: 10px;
+    position: absolute;
 }
 
 #sidebarMainHeader {
