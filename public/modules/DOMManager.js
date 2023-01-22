@@ -95,19 +95,34 @@ export default class DOMManager {
       const fullWindow = document.getElementById('fullWindow');
       const currentColumns = window.getComputedStyle(fullWindow).gridTemplateColumns;
 
-      // Regular expressions
+      sidebarArrow.style.visibility = 'visible';
+      sidebarArrow.style.opacity = 1;
+
+      // Used for timeout delay
+      function changeVisibility(visibleOption, arrowRotateOption) {
+        scoreSidebar.style.visibility = visibleOption;
+        sidebarArrow.style.transform = arrowRotateOption;
+      }
+
+      // Regular expressions for matching computed grid template columns
       const sidebarOpenRegExp = / 320px/;
       const sidebarClosedRegExp = / 50px/;
 
+      // Visiibility is being handled in JS instead of CSS due to transition logic not working
+      // the way needed
       if (sidebarClosedRegExp.test(currentColumns)) {
         fullWindow.style.gridTemplateColumns = 'auto 320px';
-        scoreSidebar.style.visibility = 'visible';
-        sidebarArrow.style.transform = 'rotate(0deg)';
+        setTimeout(changeVisibility, 700, 'visible', 'rotate(0deg)');
+        scoreSidebar.style.opacity = 1; // Will allow transition effect of opacity
+        // sidebarArrow.style.transform = 'rotate(0deg)';
       } else if (sidebarOpenRegExp.test(currentColumns)) {
         fullWindow.style.gridTemplateColumns = 'auto 50px';
-        scoreSidebar.style.visibility = 'hidden';
-        sidebarArrow.style.transform = 'rotate(180deg)';
-        sidebarArrow.style.visibility = 'visible';
+
+        // Leaving a little delay in hiding to have web page seem a little more dynamic
+        setTimeout(changeVisibility, 50, 'hidden', 'rotate(180deg)');
+
+        scoreSidebar.style.opacity = 0; // Will allow transition effect of opacity
+        // sidebarArrow.style.transform = 'rotate(180deg)';
       }
     }
 

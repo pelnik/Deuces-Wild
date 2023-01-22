@@ -10,6 +10,8 @@ body {
     width: 100vw;
     margin: 0;
     gap: 10px;
+    transition: grid-template-columns 1s;
+    /* Update JS visibility delay if changing transition */
 }
 
 @media screen and (max-width: 1000px) {
@@ -61,18 +63,27 @@ body {
     grid-row: 2;
 }
 
+#fullSidebarContainer {
+    margin: 0;
+    padding: 0;
+    position: relative;
+    grid-column: 2;
+    grid-row: 1 / 5;
+}
+
 .scoreSidebar {
     right: 0;
     background-color: rgb(255, 255, 255); /* Black */
     padding: 20px;
     padding-right: 8px;
     border-left: thick solid gray;
-    grid-column: 2;
-    grid-row: 1 / 5;
     overflow: hidden;
     position: relative;
+    transition: opacity 1s;
+    height: 100vh;
+    /* Transition on visibility does not work the way it is needed, so is handled through javascript
+    delay, update as necessary */
 }
-
 
 #sidebarArrow {
     width: 20px;
@@ -84,6 +95,7 @@ body {
     border: solid 1px;
     margin: 10px;
     position: absolute;
+    transition: transform 0.5s;
 }
 
 #sidebarMainHeader {
