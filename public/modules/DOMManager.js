@@ -15,6 +15,7 @@ export default class DOMManager {
   // Container for other startup processes before cards are dealt
   pregameStartup() {
     DOMManager.listenForSidebarOpenClose();
+    DOMManager.listenForAboutClicks();
     this.listenForPlayGameClicks();
   }
 
@@ -25,6 +26,71 @@ export default class DOMManager {
     this.listenForCardClicks();
     this.listenForSubmitClicks();
     this.removePlayGameButton();
+  }
+
+  static listenForSidebarOpenClose() {
+    const sidebarArrow = document.querySelector('#sidebarArrow');
+    const scoreSidebar = document.querySelector('.scoreSidebar');
+
+    function sidebarArrowClick() {
+      const fullWindow = document.getElementById('fullWindowGrid');
+      const currentColumns = window.getComputedStyle(fullWindow).gridTemplateColumns;
+
+      sidebarArrow.style.visibility = 'visible';
+      sidebarArrow.style.opacity = 1;
+
+      // Used for timeout delay
+      function changeVisibility(visibleOption, arrowRotateOption) {
+        scoreSidebar.style.visibility = visibleOption;
+        sidebarArrow.style.transform = arrowRotateOption;
+      }
+
+      // Regular expressions for matching computed grid template columns
+      const sidebarOpenRegExp = / 320px/;
+      const sidebarClosedRegExp = / 50px/;
+
+      // Visiibility is being handled in JS instead of CSS due to transition logic not working
+      // the way needed
+      if (sidebarClosedRegExp.test(currentColumns)) {
+        fullWindow.style.gridTemplateColumns = 'auto 320px';
+        setTimeout(changeVisibility, 700, 'visible', 'rotate(0deg)');
+        scoreSidebar.style.opacity = 1; // Will allow transition effect of opacity
+        // sidebarArrow.style.transform = 'rotate(0deg)';
+      } else if (sidebarOpenRegExp.test(currentColumns)) {
+        fullWindow.style.gridTemplateColumns = 'auto 50px';
+
+        // Leaving a little delay in hiding to have web page seem a little more dynamic
+        setTimeout(changeVisibility, 50, 'hidden', 'rotate(180deg)');
+
+        scoreSidebar.style.opacity = 0; // Will allow transition effect of opacity
+        // sidebarArrow.style.transform = 'rotate(180deg)';
+      }
+    }
+
+    sidebarArrow.addEventListener('click', sidebarArrowClick);
+  }
+
+  static listenForAboutClicks() {
+    const aboutButton = document.querySelector('#aboutButton');
+    const aboutClose = document.querySelector('#aboutClose');
+    const aboutFullTextParent = document.querySelector('#aboutFullTextParent');
+    const fullWindowGrid = document.querySelector('#fullWindowGrid');
+
+    function aboutButtonClickAction() {
+      aboutFullTextParent.style.visibility = 'visible';
+      fullWindowGrid.style.filter = 'blur(4px)';
+      fullWindowGrid.style['pointer-events'] = 'none';
+    }
+
+    aboutButton.addEventListener('click', aboutButtonClickAction);
+
+    function aboutCloseClickAction() {
+      aboutFullTextParent.style.visibility = 'hidden';
+      fullWindowGrid.style.filter = 'none';
+      fullWindowGrid.style['pointer-events'] = 'auto';
+    }
+
+    aboutClose.addEventListener('click', aboutCloseClickAction);
   }
 
   listenForPlayGameClicks() {
@@ -103,48 +169,6 @@ export default class DOMManager {
 
   removePlayGameButton() {
     this.playGameButton.remove();
-  }
-
-  static listenForSidebarOpenClose() {
-    const sidebarArrow = document.querySelector('#sidebarArrow');
-    const scoreSidebar = document.querySelector('.scoreSidebar');
-
-    function sidebarArrowClick() {
-      const fullWindow = document.getElementById('fullWindow');
-      const currentColumns = window.getComputedStyle(fullWindow).gridTemplateColumns;
-
-      sidebarArrow.style.visibility = 'visible';
-      sidebarArrow.style.opacity = 1;
-
-      // Used for timeout delay
-      function changeVisibility(visibleOption, arrowRotateOption) {
-        scoreSidebar.style.visibility = visibleOption;
-        sidebarArrow.style.transform = arrowRotateOption;
-      }
-
-      // Regular expressions for matching computed grid template columns
-      const sidebarOpenRegExp = / 320px/;
-      const sidebarClosedRegExp = / 50px/;
-
-      // Visiibility is being handled in JS instead of CSS due to transition logic not working
-      // the way needed
-      if (sidebarClosedRegExp.test(currentColumns)) {
-        fullWindow.style.gridTemplateColumns = 'auto 320px';
-        setTimeout(changeVisibility, 700, 'visible', 'rotate(0deg)');
-        scoreSidebar.style.opacity = 1; // Will allow transition effect of opacity
-        // sidebarArrow.style.transform = 'rotate(0deg)';
-      } else if (sidebarOpenRegExp.test(currentColumns)) {
-        fullWindow.style.gridTemplateColumns = 'auto 50px';
-
-        // Leaving a little delay in hiding to have web page seem a little more dynamic
-        setTimeout(changeVisibility, 50, 'hidden', 'rotate(180deg)');
-
-        scoreSidebar.style.opacity = 0; // Will allow transition effect of opacity
-        // sidebarArrow.style.transform = 'rotate(180deg)';
-      }
-    }
-
-    sidebarArrow.addEventListener('click', sidebarArrowClick);
   }
 
   // Adds the submit label and returns it
