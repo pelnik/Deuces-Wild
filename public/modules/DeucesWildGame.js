@@ -18,12 +18,9 @@ export default class DeucesWildGame {
     this.DOMManager = new DOMManager(this);
     this.ScoringCalculator = new ScoringCalculator(false);
 
-    this.DOMManager.createNewGameButtons();
     this.testCardReplacer(testCards);
-    this.DOMManager.setImagesToCards(this.hand);
-    this.DOMManager.listenForCardClicks();
-    this.DOMManager.listenForSubmitClicks();
-    DOMManager.listenForSidebarOpenClose();
+
+    this.DOMManager.pregameStartup();
   }
 
   // Will replace cards with testCards as needed since hand is dealt on creation
@@ -71,6 +68,10 @@ export default class DeucesWildGame {
       this.DOMManager.setImagesToCards(this.hand);
       this.DOMManager.listenForCardClicks();
     }
+  }
+
+  getHand() {
+    return this.hand;
   }
 
   toString() {

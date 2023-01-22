@@ -2,39 +2,53 @@
 export default class DOMManager {
   constructor(gameParent) {
     this.gameParent = gameParent;
-
     this.imageParent = document.querySelector('#imageParent');
+    this.playGameButton = document.querySelector('#playGame');
 
-    const imageFirstCard = document.querySelector('#firstCard');
-    const imageSecondCard = document.querySelector('#secondCard');
-    const imageThirdCard = document.querySelector('#thirdCard');
-    const imageFourthCard = document.querySelector('#fourthCard');
-    const imageFifthCard = document.querySelector('#fifthCard');
-
-    this.cardImages = [
-      imageFirstCard,
-      imageSecondCard,
-      imageThirdCard,
-      imageFourthCard,
-      imageFifthCard,
-    ];
+    this.cardImages = [];
 
     this.cardImageIDs = ['firstCard', 'secondCard', 'thirdCard', 'fourthCard', 'fifthCard'];
     this.submitButton = document.querySelector('#submitButton');
     this.cardsSubmitted = false;
   }
 
+  // Container for other startup processes before cards are dealt
+  pregameStartup() {
+    DOMManager.listenForSidebarOpenClose();
+    this.listenForPlayGameClicks();
+  }
+
+  // Used for event listener
+  playGameStartup() {
+    this.createNewGameButtons();
+    this.setImagesToCards(this.gameParent.getHand());
+    this.listenForCardClicks();
+    this.listenForSubmitClicks();
+    this.removePlayGameButton();
+  }
+
+  listenForPlayGameClicks() {
+    this.playGameButton.addEventListener('click', this.playGameStartup.bind(this));
+  }
+
   // We'll regenerate buttons in case multiple games are called. This will remove event listeners
   // Does not have any card based interactions
   createNewGameButtons() {
+    const oldCards = document.querySelectorAll('.cardImage');
+
+    if (oldCards.length !== 0) {
+      oldCards.forEach((image) => image.remove());
+    }
+
     for (let i = 0; i < 5; i += 1) {
       const newcardImage = document.createElement('img');
       const imageElementParent = document.querySelector('#imageParent');
 
+      // Only new cards have the cardImage class
       newcardImage.className = 'unselectedCard cardImage';
       newcardImage.id = this.cardImageIDs[i];
 
-      imageElementParent.replaceChild(newcardImage, this.cardImages[i]);
+      imageElementParent.appendChild(newcardImage);
       this.cardImages[i] = newcardImage;
     }
   }
@@ -85,6 +99,10 @@ export default class DOMManager {
     });
 
     this.gameParent.onSubmit(selectedCards);
+  }
+
+  removePlayGameButton() {
+    this.playGameButton.remove();
   }
 
   static listenForSidebarOpenClose() {

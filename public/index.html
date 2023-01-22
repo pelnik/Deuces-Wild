@@ -9,27 +9,24 @@
 </head>
 <body>
     <div id="fullWindow">
-        <img src="./Media/2 Hearts logo.png" id="logo">        
-        <div class="gameBoard">
-            <!--Add play button-->
-            <div>
-                <button type="button" id="playGame">Play Game!</button><br><br><br>
-            </div>
-            
-            <!--Add buttons-->
-            <div id="imageParent">
-                <img class="unselectedCard cardImage" id="firstCard">
-                <img class="unselectedCard cardImage" id="secondCard">
-                <img class="unselectedCard cardImage" id="thirdCard">
-                <img class="unselectedCard cardImage" id="fourthCard">
-                <img class="unselectedCard cardImage" id="fifthCard">
-            </div>
+        <div id="leftSideParent">
+            <img src="./Media/2 Hearts logo.png" id="logo">
+            <p id="aboutTextBox">About</p>
+            <div class="gameBoard">
+                <!--Add play button-->
+                <div id="playGameParent">
+                    <button type="button" id="playGame">Play Game!</button><br><br><br>
+                </div>
+                
+                <!--Parent button for images that will be added through JS-->
+                <div id="imageParent">
+                </div>
 
-            <div id="parentSubmitButton">
-                <button type="button" id="submitButton">Submit!</button>
+                <div id="parentSubmitButton">
+                    <button type="button" id="submitButton">Submit!</button>
+                </div>
             </div>
         </div>
-
 
 
         <!--Sidebar div-->
