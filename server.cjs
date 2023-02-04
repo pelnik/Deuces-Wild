@@ -1,13 +1,15 @@
 const express = require('express');
+const fs = require('node:fs');
 
 const app = express();
 const PORT = 3000;
 
-app.use(express.static('public'));
+const options = {
+  key: fs.readFileSync('test/fixtures/keys/agent2-key.pem'),
+  cert: fs.readFileSync('test/fixtures/keys/agent2-cert.pem'),
+};
 
-app.get('/', (req, res) => {
-  res.send('Hello World!');
-});
+app.use(express.static('public'));
 
 app.listen(PORT, () => {
   console.log(`Server listening on port: ${PORT}`);
