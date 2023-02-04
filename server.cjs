@@ -9,7 +9,7 @@ const sshPORT = 3443;
 
 const options = {
   key: fs.readFileSync('Keys/key.pem'),
-  cert: fs.readFileSync('Keys/cert.pem'),
+  cert: fs.readFileSync('Keys/pelnik_dev.crt'),
   passphrase: fs.readFileSync('Keys/passphrase.txt', 'utf8'),
   ca: fs.readFileSync('Keys/pelnik_dev.ca-bundle'),
 };
