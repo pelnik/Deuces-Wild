@@ -11,6 +11,7 @@ const options = {
   key: fs.readFileSync('Keys/key.pem'),
   cert: fs.readFileSync('Keys/cert.pem'),
   passphrase: fs.readFileSync('Keys/passphrase.txt', 'utf8'),
+  ca: fs.readFileSync('Keys/pelnik_dev.ca-bundle'),
 };
 
 app.use(express.static('public'));
